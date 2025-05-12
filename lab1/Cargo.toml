@@ -1,0 +1,8 @@
+[package]
+name = "lab1bigdata"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+num_cpus = "1.13"
+crossbeam-channel = "0.5"
