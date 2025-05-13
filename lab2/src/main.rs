@@ -2,25 +2,22 @@ use rayon::prelude::*;
 use std::{
     collections::HashMap,
     fs::File,
-    io::{BufReader, Read, Seek, SeekFrom},
+    io::{Read, Seek, SeekFrom, Write},
     sync::{Arc, Mutex},
-    time::Instant,
+    time::Instant
 };
 
-use crossbeam_channel::unbounded;
 const BATCH_SIZE: usize = 10 * 1024 * 1024; // 10 MB
 fn main() -> std::io::Result<()> {
-    let palabras_clave = vec!["error", "warning", "failed"];
+    let palabras_clave = vec!["templadero", "barcal", "taradez"];
     let palabras_clave = Arc::new(palabras_clave);
 
-    let file_paths: Vec<_> = (1..=18)
-        .map(|i| format!("./utils/n_{}_archivo_1gb.txt", i))
+    let file_paths: Vec<_> = (0..=17)
+        .map(|i| format!("../data/n_{}_archivo_1gb.txt", i))
         .collect();
 
     let resultados: Arc<Mutex<HashMap<String, usize>>> = Arc::new(Mutex::new(HashMap::new()));
-
     let start = Instant::now();
-
     file_paths.par_iter().for_each(|path| {
         let mut file = File::open(path).expect("No se pudo abrir el archivo");
         let mut offset = 0u64;
@@ -63,5 +60,12 @@ fn main() -> std::io::Result<()> {
         println!("{}: {}", k, v);
     }
 
+    let mut output_file = File::create("resultados.txt")?;
+    writeln!(output_file, "Tiempo total: {:?}", duracion)?;
+    writeln!(output_file, "Resultados:")?;
+    for (k, v) in resultados.iter() {
+        writeln!(output_file, "{}: {}", k, v)?;
+    }
+    println!("Resultados guardados en 'resultados.txt'");
     Ok(())
 }
