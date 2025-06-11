@@ -4,15 +4,15 @@ import os
 
 spark = SparkSession.builder \
     .appName("MapReduceExample") \
-    .master("yarn") \
+    .master("local[*]") \
     .getOrCreate()
 
 sc = spark.sparkContext
 
 def inverted_index_example():
     documents = []
-    hdfs_path = "hdfs://master:9000/docs"
-    for filename in sc.wholeTextFiles(hdfs_path).collect():
+    local_path = "/home/hduser/BIG-DATA/labSpark/docs"  # Local directory path
+    for filename in sc.wholeTextFiles(local_path).collect():
         documents.append((filename[0], filename[1]))
     rdd = sc.parallelize(documents)
     
