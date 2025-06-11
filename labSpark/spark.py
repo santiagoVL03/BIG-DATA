@@ -4,26 +4,16 @@ import os
 
 spark = SparkSession.builder \
     .appName("MapReduceExample") \
-    .master("local[*]") \
+    .master("yarn") \
     .getOrCreate()
 
 sc = spark.sparkContext
 
 def inverted_index_example():
-    if os.path.exists("docs"):
-        documents = []
-        for filename in os.listdir("docs"):
-            with open(os.path.join("docs", filename), "r") as file:
-                content = file.read()
-                documents.append((filename, content))
-    else:
-        documents = [
-            ("doc1.txt", "Hello world"),
-            ("doc2.txt", "Hello Spark"),
-            ("doc3.txt", "Spark is great for big data processing"),
-            ("doc4.txt", "MapReduce is a programming model"),
-            ("doc5.txt", "Spark can be used for MapReduce tasks")
-        ]
+    documents = []
+    hdfs_path = "hdfs://master:9000/docs"
+    for filename in sc.wholeTextFiles(hdfs_path).collect():
+        documents.append((filename[0], filename[1]))
     rdd = sc.parallelize(documents)
     
     inverted_index = rdd.flatMap(lambda x: [(word, x[0]) for word in x[1].split()]) \
