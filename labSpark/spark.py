@@ -12,11 +12,15 @@ sc = spark.sparkContext
 def inverted_index_example():
     documents = []
     local_path = "/home/hduser/BIG-DATA/labSpark/docs"  # Local directory path
-    for filename in sc.wholeTextFiles(local_path).collect():
-        documents.append((filename[0], filename[1]))
+
+    # Lee archivos y transforma ruta completa a solo el nombre del archivo
+    for filename, content in sc.wholeTextFiles(local_path).collect():
+        short_filename = os.path.basename(filename)
+        documents.append((short_filename, content))
+
     rdd = sc.parallelize(documents)
     
-    inverted_index = rdd.flatMap(lambda x: [(word, x[0]) for word in x[1].split()]) \
+    inverted_index = rdd.flatMap(lambda x: [(word.lower(), x[0]) for word in x[1].split()]) \
                         .groupByKey() \
                         .mapValues(list)
                         
